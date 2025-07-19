@@ -1,6 +1,9 @@
 package com.openclassrooms.tourguide;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import com.openclassrooms.tourguide.dto.NearbyAttractionDTO;
+import com.openclassrooms.tourguide.dto.NearbyAttractionsResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,9 +45,31 @@ public class TourGuideController {
         // The reward points for visiting each Attraction.
         //    Note: Attraction reward points can be gathered from RewardsCentral
     @RequestMapping("/getNearbyAttractions") 
-    public List<Attraction> getNearbyAttractions(@RequestParam String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-    	return tourGuideService.getNearByAttractions(visitedLocation);
+    public NearbyAttractionsResponse getNearbyAttractions(@RequestParam String userName) {
+        User user = getUser(userName);
+        VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);
+
+        // On récupère les 5 attractions les plus proches (classement existant)
+        List<Attraction> closestFive = tourGuideService.getNearByAttractions(visitedLocation);
+
+        List<NearbyAttractionDTO> dtoList = closestFive.stream()
+                .map(attraction -> new NearbyAttractionDTO(
+                        attraction.attractionName,
+                        attraction.latitude,
+                        attraction.longitude,
+                        visitedLocation.location.latitude,
+                        visitedLocation.location.longitude,
+                        tourGuideService.getDistance(attraction, visitedLocation.location),
+                        tourGuideService.getRewardPoints(attraction, user)
+                ))
+                .collect(Collectors.toList());
+
+        return new NearbyAttractionsResponse(
+                user.getUserName(),
+                visitedLocation.location.latitude,
+                visitedLocation.location.longitude,
+                dtoList
+        );
     }
     
     @RequestMapping("/getRewards") 
