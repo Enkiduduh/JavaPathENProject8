@@ -26,6 +26,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+
+    - name: Debug:lister les fichiers
+      run: ls -R | head -200
     - name: Dependance GpsUtil
       run: mvn install:install-file -Dfile=TourGuide/libs/gpsUtil.jar -DgroupId=gpsUtil -DartifactId=gpsUtil -Dversion=1.0.0 -Dpackaging=jar
     - name: Dependance RewardCentral
