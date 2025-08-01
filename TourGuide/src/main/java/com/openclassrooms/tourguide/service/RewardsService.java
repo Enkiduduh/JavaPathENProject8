@@ -1,11 +1,15 @@
 package com.openclassrooms.tourguide.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.*;
+import java.util.concurrent.*;
 
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
@@ -18,7 +22,8 @@ import com.openclassrooms.tourguide.user.UserReward;
 @Service
 public class RewardsService {
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
-
+    private final int poolCount = 10;
+    private final ExecutorService executor;
     // proximity in miles
     private int defaultProximityBuffer = 10;
     private int proximityBuffer = defaultProximityBuffer;
@@ -29,6 +34,12 @@ public class RewardsService {
     public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
         this.gpsUtil = gpsUtil;
         this.rewardsCentral = rewardCentral;
+        this.executor = Executors.newFixedThreadPool(poolCount);
+    }
+
+    @PreDestroy
+    public void shutdownExecutor() {
+        executor.shutdown();
     }
 
     public void setProximityBuffer(int proximityBuffer) {
@@ -44,35 +55,54 @@ public class RewardsService {
         this.proximityBuffer = Integer.MAX_VALUE;
     }
 
-    public void calculateRewards(User user) {
-        List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
-        if (userLocations.isEmpty()) {
-            // éventuellement ajouter une localisation par défaut
-            return;
-        }
+    public void calculateRewards(User user) throws InterruptedException, ExecutionException {
+        List<VisitedLocation> visited = new ArrayList<>(user.getVisitedLocations());
+        if (visited.isEmpty()) return;
+
+        //  Préparer le set des attractions déjà récompensées
+        Set<UUID> rewarded = user.getUserRewards().stream()
+                .map(r -> r.attraction.attractionId)
+                .collect(Collectors.toSet());
 
         List<Attraction> attractions = gpsUtil.getAttractions();
+        if (attractions.isEmpty()) return;
 
-        int added = 0;
-        for (Attraction attraction : attractions) {
-            // Ne pas recréer si déjà présente
-            boolean already = user.getUserRewards().stream()
-                    .anyMatch(r -> r.attraction.attractionId.equals(attraction.attractionId));
-            if (already) continue;
+        // Partitionner les attractions en N pools (ici 10)
+        int poolCount = 10;
+        List<List<Attraction>> partitions = IntStream.range(0, poolCount)
+                .mapToObj(i -> new ArrayList<Attraction>())
+                .collect(Collectors.toList());
+        for (int idx = 0; idx < attractions.size(); idx++) {
+            partitions.get(idx % poolCount).add(attractions.get(idx));
+        }
 
-            // Vérifier si AU MOINS UNE des visited locations est dans la zone
-            for (VisitedLocation visitedLocation : userLocations) {
-                double distance = getDistance(attraction, visitedLocation.location);
-                if (distance <= proximityBuffer) {
-                    int points = getRewardPoints(attraction, user);
-                    user.addUserReward(new UserReward(visitedLocation, attraction, points));
-                    added++;
-                    break; // ← très important : une seule reward par attraction
+        double buffer = this.proximityBuffer;
+
+        // on soumet sur le pool créé en constructor
+        List<Future<List<UserReward>>> futures = new ArrayList<>();
+        for (List<Attraction> chunk : partitions) {
+            futures.add(executor.submit(() -> {
+                List<UserReward> local = new ArrayList<>();
+                for (Attraction a : chunk) {
+                    if (rewarded.contains(a.attractionId)) continue;
+                    for (VisitedLocation vl : visited) {
+                        if (getDistance(a, vl.location) <= buffer) {
+                            int pts = rewardsCentral.getAttractionRewardPoints(a.attractionId, user.getUserId());
+                            local.add(new UserReward(vl, a, pts));
+                            break;
+                        }
+                    }
                 }
+                return local;
+            }));
+        }
+
+        for (Future<List<UserReward>> f : futures) {
+            for (UserReward r : f.get()) {
+                user.addUserReward(r);
             }
         }
     }
-
 
 
     public boolean isWithinAttractionProximity(Attraction attraction, Location location) {

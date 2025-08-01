@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import gpsUtil.location.Location;
 import org.junit.jupiter.api.Disabled;
@@ -39,6 +40,7 @@ public class TestRewardsService {
         tourGuideService.tracker.stopTracking();
         assertTrue(userRewards.size() == 1);
     }
+
     @Disabled
     @Test
     public void isWithinAttractionProximity() {
@@ -48,9 +50,10 @@ public class TestRewardsService {
         assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
     }
 
-    @Disabled // Needs fixed - can throw ConcurrentModificationException
+    // Needs fixed - can throw ConcurrentModificationException
+    @Disabled
     @Test
-    public void nearAllAttractions() {
+    public void nearAllAttractions() throws ExecutionException, InterruptedException {
         GpsUtil gpsUtil = new GpsUtil();
         RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
         rewardsService.setProximityBuffer(Integer.MAX_VALUE);
