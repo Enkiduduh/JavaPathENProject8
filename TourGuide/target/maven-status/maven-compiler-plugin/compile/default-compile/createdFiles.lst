@@ -3,9 +3,11 @@ com/openclassrooms/tourguide/helper/InternalTestHelper.class
 com/openclassrooms/tourguide/user/User.class
 com/openclassrooms/tourguide/TourGuideController.class
 com/openclassrooms/tourguide/user/UserPreferences.class
+com/openclassrooms/tourguide/service/RewardsService$UserRewardTiming.class
 com/openclassrooms/tourguide/service/TourGuideService$1.class
 com/openclassrooms/tourguide/service/RewardsService.class
 com/openclassrooms/tourguide/dto/NearbyAttractionsResponse.class
+com/openclassrooms/tourguide/service/RewardsService$SpatialIndex.class
 com/openclassrooms/tourguide/TourGuideModule.class
 com/openclassrooms/tourguide/dto/NearbyAttractionDTO.class
 com/openclassrooms/tourguide/TourguideApplication.class
