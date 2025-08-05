@@ -23,7 +23,7 @@ import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
 public class TestRewardsService {
-//    @Disabled
+
     @Test
     public void userGetRewards() {
         GpsUtil gpsUtil = new GpsUtil();
@@ -49,8 +49,7 @@ public class TestRewardsService {
         assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
     }
 
-    // Needs fixed - can throw ConcurrentModificationException
-//    @Disabled
+
     @Test
     public void nearAllAttractions() throws ExecutionException, InterruptedException {
         GpsUtil gpsUtil = new GpsUtil();

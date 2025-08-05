@@ -91,7 +91,10 @@ public class RewardsService {
     }
 
     public int getRewardPoints(Attraction attraction, User user) {
-        return attractionRewardCache.get(attraction.attractionId);
+        return attractionRewardCache.computeIfAbsent(
+                attraction.attractionId,
+                id -> rewardsCentral.getAttractionRewardPoints(id, user.getUserId())
+        );
     }
 
     public double getDistance(Location loc1, Location loc2) {
