@@ -24,6 +24,7 @@ public class RewardsService {
     // buffer
     private final int defaultProximityBuffer = 10;
     private int proximityBuffer = defaultProximityBuffer;
+    private int attractionProximityRange = 200;
 
     private final GpsUtil gpsUtil;
     private final RewardCentral rewardsCentral;
@@ -83,6 +84,10 @@ public class RewardsService {
 
     private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
         return !(getDistance(attraction, visitedLocation.location) > proximityBuffer);
+    }
+
+    public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
+        return !(getDistance(attraction, location) > attractionProximityRange);
     }
 
     public int getRewardPoints(Attraction attraction, User user) {

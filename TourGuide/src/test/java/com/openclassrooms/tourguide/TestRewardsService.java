@@ -23,7 +23,7 @@ import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
 public class TestRewardsService {
-    @Disabled
+//    @Disabled
     @Test
     public void userGetRewards() {
         GpsUtil gpsUtil = new GpsUtil();
@@ -41,17 +41,16 @@ public class TestRewardsService {
         assertTrue(userRewards.size() == 1);
     }
 
-//    @Disabled
-//    @Test
-//    public void isWithinAttractionProximity() {
-//        GpsUtil gpsUtil = new GpsUtil();
-//        RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-//        Attraction attraction = gpsUtil.getAttractions().get(0);
-//        assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
-//    }
+    @Test
+    public void isWithinAttractionProximity() {
+        GpsUtil gpsUtil = new GpsUtil();
+        RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
+        Attraction attraction = gpsUtil.getAttractions().get(0);
+        assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
+    }
 
     // Needs fixed - can throw ConcurrentModificationException
-    @Disabled
+//    @Disabled
     @Test
     public void nearAllAttractions() throws ExecutionException, InterruptedException {
         GpsUtil gpsUtil = new GpsUtil();

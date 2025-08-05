@@ -114,17 +114,14 @@ public class TourGuideService {
     }
 
     public VisitedLocation trackUserLocation(User user) {
-        VisitedLocation vl = gpsUtil.getUserLocation(user.getUserId());
-        user.addToVisitedLocations(vl);
-        // on décale calculateRewards en asynchrone
-        rewardExecutor.submit(() -> {
-            try {
-                rewardsService.calculateRewards(user);
-            } catch (Exception e) {
-                logger.error("Reward calc failed for user {}", user.getUserName(), e);
-            }
-        });
-        return vl;
+        // 1. D'abord, calcul des rewards sur les visites déjà présentes
+        rewardsService.calculateRewards(user);
+
+        // 2. On récupère ensuite la nouvelle position (mais on ne la traite pas ici)
+        VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+        user.addToVisitedLocations(visitedLocation);
+
+        return visitedLocation;
     }
 
     @PreDestroy

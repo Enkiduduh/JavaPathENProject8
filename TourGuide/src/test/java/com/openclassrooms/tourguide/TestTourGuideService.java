@@ -20,7 +20,6 @@ import com.openclassrooms.tourguide.user.User;
 import tripPricer.Provider;
 
 public class TestTourGuideService {
-	@Disabled
 	@Test
 	public void getUserLocation() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -33,7 +32,6 @@ public class TestTourGuideService {
 		tourGuideService.tracker.stopTracking();
 		assertTrue(visitedLocation.userId.equals(user.getUserId()));
 	}
-	@Disabled
 	@Test
 	public void addUser() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -55,7 +53,6 @@ public class TestTourGuideService {
 		assertEquals(user, retrivedUser);
 		assertEquals(user2, retrivedUser2);
 	}
-	@Disabled
 	@Test
 	public void getAllUsers() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -76,7 +73,6 @@ public class TestTourGuideService {
 		assertTrue(allUsers.contains(user));
 		assertTrue(allUsers.contains(user2));
 	}
-	@Disabled
 	@Test
 	public void trackUser() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -92,8 +88,6 @@ public class TestTourGuideService {
 		assertEquals(user.getUserId(), visitedLocation.userId);
 	}
 
-//	@Disabled // Not yet implemented
-@Disabled
 	@Test
 	public void getNearbyAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -110,7 +104,6 @@ public class TestTourGuideService {
 
 		assertEquals(5, attractions.size());
 	}
-	@Disabled
 	@Test
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
